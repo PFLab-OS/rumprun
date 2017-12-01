@@ -134,16 +134,17 @@ parseargs ()
 	shift $((${OPTIND} - 1))
 
 	# are we on a git branch which is not master?
-	if type ${GIT} >/dev/null; then
-		GITBRANCH=$(${GIT} rev-parse --abbrev-ref HEAD 2>/dev/null)
-		if [ ${GITBRANCH} = "master" -o ${GITBRANCH} = "HEAD" ]; then
-			GITBRANCH=
-		else
-			GITBRANCH=-${GITBRANCH}
-		fi
-	else
-		GITBRANCH=
-	fi
+	# if type ${GIT} >/dev/null; then
+	# 	GITBRANCH=$(${GIT} rev-parse --abbrev-ref HEAD 2>/dev/null)
+	# 	if [ ${GITBRANCH} = "master" -o ${GITBRANCH} = "HEAD" ]; then
+	# 		GITBRANCH=
+	# 	else
+	# 		GITBRANCH=-${GITBRANCH}
+	# 	fi
+	# else
+	# 	GITBRANCH=
+	# fi
+    GITBRANCH=
 
 	[ -n "${RRDEST}" ] || RRDEST=./rumprun${GITBRANCH}${EXTSRC}
 
