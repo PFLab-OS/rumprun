@@ -1,2 +1,0 @@
-export PATH="$HOME/rumprun-build/dist/bin:$PATH"
-export RUMPRUN_TOOLCHAIN_TUPLE=x86_64-rumprun-netbsd

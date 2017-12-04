@@ -7,4 +7,4 @@ CPPFLAGS+=	-Iarch/aarch64
 
 .PHONY: archdirs
 archdirs:
-        mkdir -p ${RROBJ}/platform/arch/aarch64
+	mkdir -p ${RROBJ}/platform/arch/aarch64
