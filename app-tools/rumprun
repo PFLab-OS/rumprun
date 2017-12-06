@@ -717,6 +717,8 @@ bake_iso ()
 	IMGSDIR="${ISODIR}/images"
 	mkdir -p "${ISODIR}"
 
+	grub_target=""
+
 	json_open_block
 
 	while getopts "${guestopts}" opt; do
@@ -725,8 +727,9 @@ bake_iso ()
 			parse_blkspec "${OPTARG}" || usage
 			;;
 		d)
-			die -d not supported on iso
-			;;
+			grub_target="-d ${OPTARGS}"
+		# 	die -d not supported on iso
+		# 	;;
 		D)
 			die -D not supported on iso
 			;;
@@ -777,7 +780,7 @@ bake_iso ()
 	    $(basename $1) >> "${ISODIR}/boot/grub/grub.cfg"
 	cp ${bootimage} "${ISODIR}/boot"
 	cp "${TMPDIR}/json.cfg" "${ISODIR}"
-	grub-mkrescue -o ${opt_name} "${ISODIR}"
+	grub-mkrescue -o ${opt_name} ${grub_target} "${ISODIR}"
 }
 
 make_ec2 ()
