@@ -38,42 +38,23 @@ static int
 parsemem(uint32_t addr, uint32_t len)
 {
     /*
-     * Physical memory chunks layout:
-     *
-     * with 1GB phys mem:
+     * We assume physical memory chunks layout of MinnowBoard Turbot:
      *
      * start       end         size    pages  type
      * ===========================================
-     * 0x0         0xa0000     640.0KB 160    1
-     * 0x100000    0x800000    7.0MB   1792   1
      * ...
-     * 0x900000    0x3eb97000  994.6MB 254615 1
+     * 0x100000    0x20000000  511.0MB 130816 1
      * ...
-     *
-     * with 2GB phys mem:
-     *
-     * start       end         size    pages  type
-     * ===========================================
-     * 0x0         0xa0000     640.0KB 160    1
-     * 0x100000    0x800000    7.0MB   1792   1
+     * 0x20100000  0x75a74000  1.3GB   350580 1
      * ...
-     * 0x900000    0x7eb97000  2.0GB   516759 1
-     * ...
-     *
-     * Therefore we assume that there exist at least the following two memory chunks:
-     *
-     * * A chunk which starts at 0x100000 and ends at 0x800000 .
-     * * A chunk which starts at 0x900000 and has almost same size as physical memory.
-     *
-     * Also physical memory starts from 0x900000 are mapped to virtual memory from 0x800000.
      */
 
-#define MEMCHUNK_1MB_START 0x100000
-#define MEMCHUNK_1MB_END 0x800000
-#define MEMCHUNK_1MB_LEN (MEMCHUNK_1MB_START - MEMCHUNK_1MB_END)
-#define MEMCHUNK_1MB_PAGES (MEMCHUNK_1MB_LEN / BMK_PCPU_PAGE_SIZE)
+#define MEMCHUNK1_START 0x100000
+#define MEMCHUNK1_END   0x20000000
+#define MEMCHUNK1_LEN (MEMCHUNK1_START - MEMCHUNK1_END)
+#define MEMCHUNK1_PAGES (MEMCHUNK1_LEN / BMK_PCPU_PAGE_SIZE)
 
-#define MEMCHUNK_9MB_START 0x900000
+#define MEMCHUNK2_START 0x20100000
 
     struct multiboot_mmap_entry *mbm;
 	unsigned long osend;
@@ -84,11 +65,23 @@ parsemem(uint32_t addr, uint32_t len)
      * Look for our memory.  We assume it's just in one chunk
      * starting at MEMSTART.
      */
+    bmk_printf("mem:  start         end   size  pages type\n");
  	for (off = 0; off < len; off += mbm->size + sizeof(mbm->size)) {
         mbm = (void*)(uintptr_t)(addr + off);
-        bmk_printf("mbm->size: %u, addr: 0x%llx, len: %llu, type: %u\n",
-            mbm->size, mbm->addr, mbm->len, mbm->type);
-        if (mbm->addr == MEMCHUNK_9MB_START) {
+
+        bmk_printf("0x%09llx 0x%09llx ",
+                mbm->addr, mbm->addr + mbm->len);
+        if (mbm->len >= (1 << 30)) {
+            bmk_printf("%4lluGB", mbm->len / (1 << 30));
+        } else if (mbm->len >= (1 << 20)) {
+            bmk_printf("%4lluMB", mbm->len / (1 << 20));
+        } else {
+            bmk_printf("%4lluKB", mbm->len / (1 << 10));
+        }
+        bmk_printf(" %6llu %4u\n",
+                mbm->len / BMK_PCPU_PAGE_SIZE, mbm->type);
+
+        if (mbm->addr == MEMCHUNK2_START) {
             bmk_assert(mbm->type == MULTIBOOT_MEMORY_AVAILABLE);
             break;
         }
@@ -98,11 +91,11 @@ parsemem(uint32_t addr, uint32_t len)
         bmk_platform_halt("multiboot memory chunk not found");
 
 	osend = bmk_round_page((unsigned long)_end);
-    bmk_assert(osend > MEMCHUNK_1MB_START && osend < MEMCHUNK_1MB_END);
+    bmk_assert(osend > MEMCHUNK1_START && osend < MEMCHUNK1_END);
 
-	bmk_pgalloc_loadmem(osend, MEMCHUNK_1MB_START + MEMCHUNK_1MB_LEN + mbm->len);
-	bmk_memsize = MEMCHUNK_1MB_START + MEMCHUNK_1MB_LEN + mbm->len - osend;
-    bmk_printf("bmk_memsize: %lu\n", bmk_memsize);
+	bmk_pgalloc_loadmem(osend, MEMCHUNK1_START + MEMCHUNK1_LEN + mbm->len);
+	bmk_memsize = MEMCHUNK1_START + MEMCHUNK1_LEN + mbm->len - osend;
+    // bmk_printf("bmk_memsize: %lu\n", bmk_memsize);
 
 	return 0;
 }
