@@ -129,6 +129,10 @@ bmk_isr_rumpkernel(int (*func)(void *), void *arg, int intr, int flags)
 	struct intrhand *ih;
 	int error, icheck, routedintr;
 
+    /* temporarily ignore */
+    if (intr == 255)
+        return;
+
 	if (intr > sizeof(isr_todo)*8 || intr > BMK_MAXINTR)
 		bmk_platform_halt("bmk_isr_rumpkernel: intr");
 
