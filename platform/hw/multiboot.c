@@ -51,10 +51,11 @@ parsemem(uint32_t addr, uint32_t len)
 
 #define MEMCHUNK1_START 0x100000
 #define MEMCHUNK1_END   0x20000000
-#define MEMCHUNK1_LEN (MEMCHUNK1_START - MEMCHUNK1_END)
+#define MEMCHUNK1_LEN (MEMCHUNK1_END - MEMCHUNK1_START)
 #define MEMCHUNK1_PAGES (MEMCHUNK1_LEN / BMK_PCPU_PAGE_SIZE)
 
 #define MEMCHUNK2_START 0x20100000
+#define MEMCHUNK2_START_PAD 0x100000
 
     struct multiboot_mmap_entry *mbm;
 	unsigned long osend;
@@ -65,20 +66,13 @@ parsemem(uint32_t addr, uint32_t len)
      * Look for our memory.  We assume it's just in one chunk
      * starting at MEMSTART.
      */
-    bmk_printf("mem:  start         end   size  pages type\n");
+    bmk_printf("mem:  start         end      size  pages type\n");
  	for (off = 0; off < len; off += mbm->size + sizeof(mbm->size)) {
         mbm = (void*)(uintptr_t)(addr + off);
 
-        bmk_printf("0x%09llx 0x%09llx ",
-                mbm->addr, mbm->addr + mbm->len);
-        if (mbm->len >= (1 << 30)) {
-            bmk_printf("%4lluGB", mbm->len / (1 << 30));
-        } else if (mbm->len >= (1 << 20)) {
-            bmk_printf("%4lluMB", mbm->len / (1 << 20));
-        } else {
-            bmk_printf("%4lluKB", mbm->len / (1 << 10));
-        }
-        bmk_printf(" %6llu %4u\n",
+        bmk_printf("0x%09llx 0x%09llx %7lluKB %6llu %4u\n",
+                mbm->addr, mbm->addr + mbm->len,
+                mbm->len / (1 << 10),
                 mbm->len / BMK_PCPU_PAGE_SIZE, mbm->type);
 
         if (mbm->addr == MEMCHUNK2_START) {
@@ -93,9 +87,9 @@ parsemem(uint32_t addr, uint32_t len)
 	osend = bmk_round_page((unsigned long)_end);
     bmk_assert(osend > MEMCHUNK1_START && osend < MEMCHUNK1_END);
 
-	bmk_pgalloc_loadmem(osend, MEMCHUNK1_START + MEMCHUNK1_LEN + mbm->len);
-	bmk_memsize = MEMCHUNK1_START + MEMCHUNK1_LEN + mbm->len - osend;
-    // bmk_printf("bmk_memsize: %lu\n", bmk_memsize);
+    unsigned long long memchunk2_net_len = mbm->len - MEMCHUNK2_START_PAD;
+	bmk_pgalloc_loadmem(osend, MEMCHUNK1_START + MEMCHUNK1_LEN + memchunk2_net_len);
+	bmk_memsize = MEMCHUNK1_START + MEMCHUNK1_LEN + memchunk2_net_len - osend;
 
 	return 0;
 }

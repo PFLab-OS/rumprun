@@ -41,9 +41,9 @@ BEGIN {
 	}
 
 	# second level, page directories, need full one per gig
+	addr = 0
 	for (i = 0; i < mapgigs; i++) {
 		printf("\n.align 0x1000\ncpu_pd%d:\n", i);
-		addr = i*512*TWOMEGS
 		if (i == 0) {
 			printf("\t.quad cpu_pt0 + 0%x\n", PG_FORALL);
 			j = 1
@@ -56,8 +56,7 @@ BEGIN {
 			    addr, PG_FORALL, PG_PS);
 			addr += TWOMEGS
             if (addr == 0x20000000) {
-                printf("\t/* 1MB hole */\n")
-                addr += 0x100000
+                addr += TWOMEGS
             }
 		}
 	}
