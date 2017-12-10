@@ -40,22 +40,23 @@ parsemem(uint32_t addr, uint32_t len)
     /*
      * We assume physical memory chunks layout of MinnowBoard Turbot:
      *
-     * start       end         size    pages  type
-     * ===========================================
+     * mem:  start         end      size  pages type
      * ...
-     * 0x100000    0x20000000  511.0MB 130816 1
+     * 0x000100000 0x020000000  523264KB 130816    1
      * ...
-     * 0x20100000  0x75a74000  1.3GB   350580 1
+     * 0x020100000 0x075a74000 1402320KB 350580    1
      * ...
      */
 
 #define MEMCHUNK1_START 0x100000
+/*
 #define MEMCHUNK1_END   0x20000000
 #define MEMCHUNK1_LEN (MEMCHUNK1_END - MEMCHUNK1_START)
 #define MEMCHUNK1_PAGES (MEMCHUNK1_LEN / BMK_PCPU_PAGE_SIZE)
 
 #define MEMCHUNK2_START 0x20100000
 #define MEMCHUNK2_START_PAD 0x100000
+*/
 
     struct multiboot_mmap_entry *mbm;
 	unsigned long osend;
@@ -75,7 +76,8 @@ parsemem(uint32_t addr, uint32_t len)
                 mbm->len / (1 << 10),
                 mbm->len / BMK_PCPU_PAGE_SIZE, mbm->type);
 
-        if (mbm->addr == MEMCHUNK2_START) {
+        // if (mbm->addr == MEMCHUNK2_START) {
+        if (mbm->addr == MEMCHUNK1_START) {
             bmk_assert(mbm->type == MULTIBOOT_MEMORY_AVAILABLE);
             break;
         }
@@ -85,11 +87,11 @@ parsemem(uint32_t addr, uint32_t len)
         bmk_platform_halt("multiboot memory chunk not found");
 
 	osend = bmk_round_page((unsigned long)_end);
-    bmk_assert(osend > MEMCHUNK1_START && osend < MEMCHUNK1_END);
+    bmk_assert(osend > MEMCHUNK1_START && osend < /* MEMCHUNK1_END */ MEMCHUNK1_START + mbm->len);
 
-    unsigned long long memchunk2_net_len = mbm->len - MEMCHUNK2_START_PAD;
-	bmk_pgalloc_loadmem(osend, MEMCHUNK1_START + MEMCHUNK1_LEN + memchunk2_net_len);
-	bmk_memsize = MEMCHUNK1_START + MEMCHUNK1_LEN + memchunk2_net_len - osend;
+    // unsigned long long memchunk2_net_len = mbm->len - MEMCHUNK2_START_PAD;
+	bmk_pgalloc_loadmem(osend, MEMCHUNK1_START + /* MEMCHUNK1_LEN + memchunk2_net_len */ mbm->len);
+	bmk_memsize = MEMCHUNK1_START + /* MEMCHUNK1_LEN + memchunk2_net_len */ mbm->len - osend;
 
 	return 0;
 }

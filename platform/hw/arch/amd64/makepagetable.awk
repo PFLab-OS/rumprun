@@ -55,9 +55,9 @@ BEGIN {
 			printf("\t.quad 0x%016x + 0x%x + 0x%x\n", \
 			    addr, PG_FORALL, PG_PS);
 			addr += TWOMEGS
-            if (addr == 0x20000000) {
-                addr += TWOMEGS
-            }
+            # if (addr == 0x20000000) {
+            #     addr += TWOMEGS
+            # }
 		}
 	}
 
