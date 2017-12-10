@@ -27,7 +27,6 @@
 #include <hw/kernel.h>
 
 #include <bmk-core/pgalloc.h>
-#include <bmk-core/printf.h>
 
 #include <bmk-pcpu/pcpu.h>
 
@@ -90,7 +89,6 @@ rumpcomp_pci_irq_map(unsigned bus, unsigned device, unsigned fun,
 	if (cookie > BMK_MAXINTR)
 		return BMK_EGENERIC;
 
-    bmk_printf("rumpcomp_pci_irq_map: intrs[%u] = %d\n", cookie, intrline);
 	intrs[cookie] = intrline;
 	return 0;
 }
@@ -98,10 +96,7 @@ rumpcomp_pci_irq_map(unsigned bus, unsigned device, unsigned fun,
 void *
 rumpcomp_pci_irq_establish(unsigned cookie, int (*handler)(void *), void *data)
 {
-    bmk_printf("rumpcomp_pci_irq_establish: intrs[%u]\n", cookie);
-    if (cookie == 255) {
-        return NULL;
-    }
+
 	bmk_isr_rumpkernel(handler, data, intrs[cookie], BMK_INTR_ROUTED);
 	return &intrs[cookie];
 }
