@@ -41,7 +41,7 @@
 #include <bmk-core/sched.h>
 #include <bmk-core/string.h>
 
-#include <integrator/boardreg.h>
+#include <boardreg.h>
 
 static void
 loadmem(void)

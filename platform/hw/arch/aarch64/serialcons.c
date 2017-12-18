@@ -26,7 +26,7 @@
 #include <hw/types.h>
 #include <hw/kernel.h>
 
-#include <integrator/boardreg.h>
+#include <boardreg.h>
 
 /*
  * Since this is serial, unlike in a framebuffer console,
