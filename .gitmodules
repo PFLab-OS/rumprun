@@ -3,4 +3,4 @@
 	url = https://github.com/rumpkernel/buildrump.sh
 [submodule "src-netbsd"]
 	path = src-netbsd
-	url = https://github.com/rumpkernel/src-netbsd
+	url = https://github.com/PFLab-OS/src-netbsd
