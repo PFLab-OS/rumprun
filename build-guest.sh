@@ -45,7 +45,7 @@ CC=$CC ./build-rr.sh -j2 -o $RR_OBJ -d $RR_STAGE hw $@
 
 RR_SHRC=rr-bashrc
 
-cat > $RR_BUILD/$RR_SHRC << EOF
+cat >> $RR_BUILD/$RR_SHRC << EOF
 export PATH="$(cd $RR_STAGE; pwd)/bin:\$PATH"
 export RUMPRUN_TOOLCHAIN_TUPLE=$TOOLCHAIN_TUPLE
 EOF
@@ -55,7 +55,7 @@ if ! grep $RR_SHRC $SHRC; then
     echo "source $(cd $RR_BUILD; pwd)/$RR_SHRC" >> $SHRC
 fi
 
-RR_TEST=$RR_BUILD/test
+RR_TEST=$RR_BUILD/test-$TARGET
 mkdir_p $RR_TEST
 
 cat > $RR_TEST/Makefile << EOF
